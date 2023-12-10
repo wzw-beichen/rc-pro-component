@@ -1,4 +1,4 @@
-技术栈: webpack5 + React18 + TS
+技术栈: webpack5 + React18 + TS  
 工程化: eslint + prettier + husky + git hooks
 
 #### 项目初始化
@@ -47,10 +47,9 @@ create `.babelrc` file
 ```
  npm i -D babel-loader style-loader css-loader
 ```
-.babel-loader: 此 package 允许你使用 `Babel` 和 `webpack` 转译 `JavaScript` 文件。  
+.babel-loader: 此 package 允许你使用 `Babel` 和 `webpack` 转译 `JavaScript` 文件  
 .style-loader: 把 `CSS` 插入到 `DOM` 中  
 .css-loader: `css-loader` 会对 `@import` 和 `url()` 进行处理，就像 js 解析 `import/require()` 一样  
-
 ##### Webpack基本配置
 新建 `webpack.config.js` 文件
 ```
@@ -103,7 +102,6 @@ module.exports = {
 .mode: process.env.NODE_ENV --> development, 为modules和chunks启用有意义的名称  
 .open: 告诉server在服务启动后打开默认浏览器  
 .hot: 开启热更新  
-
 #### 写一个React Demo
 ##### 创建index.js
 `src/index.js`
@@ -123,7 +121,6 @@ const Index = () => {
 
 ReactDOM.render(<Index />, document.getElementById("root"));
 ```
-
 ##### 创建index.css
 `src/index.css`
 ```
@@ -136,7 +133,6 @@ ReactDOM.render(<Index />, document.getElementById("root"));
   color: #fff;
 }
 ```
-
 ##### 创建index.html
 `public/index.html`
 ```
@@ -153,7 +149,6 @@ ReactDOM.render(<Index />, document.getElementById("root"));
 </html>
 ```
 最后，执行npm start，项目会启动在8080端口。
-
 #### Typescript配置
 ```
   npm i -D typescript ts-loader @types/node @types/react @types/react-dom
@@ -253,10 +248,8 @@ module: {
 . `ts-loader` 在内部是调用了 TypeScript 的官方编译器 -- tsc。所以，ts-loader 和 tsc 是共享 `tsconfig.json`，所以会提供完整的报错信息，ts-loader也与 `vscode` 提供的语法校验表现一致  
 .而 `@babel/preset-typescript` 有的时候会无法提供完整的报错信息和类型提示  
 #### 管理资源
-`webpack` 只能理解 `Javascript` 和 `JSON` 文件，这是 `webpack` 开箱可用的自带能力。`loader` 让 `webpack` 能够去处理其他类型的文件，并将它们转换为有效的模块中。    
-
+`webpack` 只能理解 `Javascript` 和 `JSON` 文件，这是 `webpack` 开箱可用的自带能力。`loader` 让 `webpack` 能够去处理其他类型的文件，并将它们转换为有效的模块中。  
 loader中， `test` 属性可以识别出哪些文件会被转换； `use` 属性可以定义出转换时，应该是用哪个loader。  
-
 ##### Less
 ```
  npm i -D less less-loader
