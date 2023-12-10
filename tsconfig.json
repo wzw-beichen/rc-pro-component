@@ -1,0 +1,31 @@
+{
+  /** 包含制定文件 */
+  "include": ["./src/*"],
+  "compilerOptions": {
+    /** 重定向输出目录 */
+    "outDir": "./dist/",
+    /** 不允许隐式的 any 类型 */
+    "noImplicitAny": true,
+    // 指定生成代码的模板标准
+    "module": "es6",
+    // 目标语言的版本
+    "target": "es5",
+    "jsx": "react",
+    /** */
+    "allowJs": true,
+    /**
+     * allowSyntheticDefaultImports允许import命令默认加载没有default输出的模块。
+     * 比如，打开这个设置，就可以写import React from "react";，
+     * 而不是import * as React from "react";。
+     */
+    "allowSyntheticDefaultImports": true,
+    "moduleResolution": "Node",
+    // 生成声明文件，开启后会自动生成声明文件，生成相应的 .d.ts文件
+    "declaration": true,
+    /** declarationDir设置生成的.d.ts文件所在的目录。 */
+    "declarationDir": "./types",
+    // 生成目标文件的sourceMap文件
+    "sourceMap": true
+  },
+  "extends": ["./path.json"]
+}
