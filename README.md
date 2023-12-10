@@ -16,13 +16,13 @@
 ```
  npm i -D @babel/core @babel/preset-env @babel/preset-react
 ```
-. `@babel/core` : babel转码的核心引擎
-. `@babel/preset-env` : 添加对ES5、ES6的支持
-. `@babel/preset-react` : 添加对JSX的支持
-. `@babel/plugin-proposal-class-properties` : 对React中class的支持
+. `@babel/core` : babel转码的核心引擎  
+. `@babel/preset-env` : 添加对ES5、ES6的支持  
+. `@babel/preset-react` : 添加对JSX的支持  
+. `@babel/plugin-proposal-class-properties` : 对React中class的支持  
 
 ##### Babel配置
-create `.babelrc` file
+create `.babelrc` file  
 ```
  {
     "presets": ["@babel/react", "@babel/env"],
@@ -30,7 +30,7 @@ create `.babelrc` file
  }
 ```
 ##### Babel Plugin
-`Babel`是代码转换器，借助`Babel`，我们可以使用最流行的js写法，而`plugin`就是实现`Babel`功能的核心。
+`Babel`是代码转换器，借助`Babel`，我们可以使用最流行的js写法，而`plugin`就是实现`Babel`功能的核心。  
 ![](https://pic2.zhimg.com/80/v2-155e707aaaa58174263ac67879558019_1440w.webp)
 
 #### Webpack引入
@@ -38,18 +38,18 @@ create `.babelrc` file
  npm i -D webpack webpack-cli webpack-dev-server 
  html-webpack-plugin
 ```
-. `webpack` : webpack插件的核心依赖
-. `webpack-cli` : 为插件提供命令行工具
-. `webpack-dev-server` : 帮助启动live server
-. `html-webpack-plugin` : 帮助创建HTML模版
+. `webpack` : webpack插件的核心依赖  
+. `webpack-cli` : 为插件提供命令行工具  
+. `webpack-dev-server` : 帮助启动live server  
+. `html-webpack-plugin` : 帮助创建HTML模版  
 
 ##### 安装loader
 ```
  npm i -D babel-loader style-loader css-loader
 ```
-.babel-loader: 此 package 允许你使用 `Babel` 和 `webpack` 转译 `JavaScript` 文件。
-.style-loader: 把 `CSS` 插入到 `DOM` 中
-.css-loader: `css-loader` 会对 `@import` 和 `url()` 进行处理，就像 js 解析 `import/require()` 一样
+.babel-loader: 此 package 允许你使用 `Babel` 和 `webpack` 转译 `JavaScript` 文件。  
+.style-loader: 把 `CSS` 插入到 `DOM` 中  
+.css-loader: `css-loader` 会对 `@import` 和 `url()` 进行处理，就像 js 解析 `import/require()` 一样  
 
 ##### Webpack基本配置
 新建 `webpack.config.js` 文件
@@ -158,9 +158,9 @@ ReactDOM.render(<Index />, document.getElementById("root"));
 ```
   npm i -D typescript ts-loader @types/node @types/react @types/react-dom
 ```
-. `typescript` : TypeScript的主要引擎
-. `ts-loader` : 转义.ts --> .js 并打包
-. `@types/node` `@types/react` `@types/react-dom` : 对 `node` 、 `react` 、 `react dom` 类型的定义
+. `typescript` : TypeScript的主要引擎  
+. `ts-loader` : 转义.ts --> .js 并打包  
+. `@types/node` `@types/react` `@types/react-dom` : 对 `node` 、 `react` 、 `react dom` 类型的定义  
 ##### 同时在根目录加入tsconfig.json来对ts编译进行配置：
 ```
 //_tsconfig.json_
@@ -249,14 +249,13 @@ module: {
   ]
 },
 ```
-那么为什么还要在项目中使用ts-loader呢？
-. `ts-loader` 在内部是调用了 TypeScript 的官方编译器 -- tsc。所以，ts-loader 和 tsc 是共享 `tsconfig.json`，所以会提供完整的报错信息，ts-loader也与 `vscode` 提供的语法校验表现一致
-.而 `@babel/preset-typescript` 有的时候会无法提供完整的报错信息和类型提示
-
+那么为什么还要在项目中使用ts-loader呢？  
+. `ts-loader` 在内部是调用了 TypeScript 的官方编译器 -- tsc。所以，ts-loader 和 tsc 是共享 `tsconfig.json`，所以会提供完整的报错信息，ts-loader也与 `vscode` 提供的语法校验表现一致  
+.而 `@babel/preset-typescript` 有的时候会无法提供完整的报错信息和类型提示  
 #### 管理资源
-`webpack` 只能理解 `Javascript` 和 `JSON` 文件，这是 `webpack` 开箱可用的自带能力。`loader` 让 `webpack` 能够去处理其他类型的文件，并将它们转换为有效的模块中。  
+`webpack` 只能理解 `Javascript` 和 `JSON` 文件，这是 `webpack` 开箱可用的自带能力。`loader` 让 `webpack` 能够去处理其他类型的文件，并将它们转换为有效的模块中。    
 
-loader中， `test` 属性可以识别出哪些文件会被转换； `use` 属性可以定义出转换时，应该是用哪个loader。
+loader中， `test` 属性可以识别出哪些文件会被转换； `use` 属性可以定义出转换时，应该是用哪个loader。  
 
 ##### Less
 ```
