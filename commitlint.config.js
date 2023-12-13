@@ -1,7 +1,51 @@
 // commitlint.config.js
 module.exports = {
   extends: ["@commitlint/config-conventional"], // 检测规则
-  rules: {},
+  rules: {
+    "type-enum": [
+      2,
+      "always",
+      [
+        // 特性: 🚀 新增功能
+        "feat",
+        //修复: 🧩 修复缺陷
+        "fix",
+        // 文档: 📚 文档变更
+        "docs",
+        // 格式: 🎨 代码格式（不影响功能，例如空格、分号等格式修正）
+        "style",
+        // 重构: ♻️  代码重构（不包括 bug 修复、功能新增）
+        "refactor",
+        // 性能: ⚡️ 性能优化
+        "pref",
+        // 测试: ✅ 添加疏漏测试或已有测试改动
+        "test",
+        // 构建: 📦️ 构建流程、外部依赖变更（如升级 npm 包、修改 webpack 配置等）
+        "chore",
+        // 集成: 🎡 修改 CI 配置、脚本
+        "ci",
+        // 回退: ⏪️ 回滚 commit
+        "revert",
+        // 打包: 🔨 项目打包发布
+        "build",
+      ],
+    ],
+    "type-empty": [2, "never"],
+    "type-case": [2, "always", "lower-case"],
+    "type-min-length": [2, "always", 2],
+    "type-max-length": [2, "always", 10],
+    "subject-empty": [2, "never"],
+    "header-min-length": [2, "always", 5],
+    "header-full-stop": [2, "never", "-"],
+    "header-max-length": () => {
+      return [2, "always", 80];
+    },
+    "subject-exclamation-mark": [1, "never"],
+    // "signed-off-by": [2, "always", "user-email:"],
+    // "trailer-exists": [2, "always", "user-email:"],
+    // 自定义rule
+    "custom-rule": [1, "always"],
+  },
   prompt: {
     messages: {
       type: "选择你要提交的类型 :",
@@ -50,4 +94,20 @@ module.exports = {
     ],
     useEmoji: true,
   },
+  plugins: [
+    {
+      rules: {
+        // 定义自定义rule校验方法
+        "custom-rule": (commit) => {
+          console.log("commit", commit);
+          const { subject } = commit;
+          const HELLO_WORLD = "Hello World";
+          return [
+            subject?.includes(HELLO_WORLD),
+            `Your subject should contain ${HELLO_WORLD} message`,
+          ];
+        },
+      },
+    },
+  ],
 };
