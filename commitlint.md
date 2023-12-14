@@ -249,9 +249,9 @@ git commit -m "feat\!: 测试"
 ✖   subject must not have an exclamation mark in the subject to identify a breaking change [subject-exclamation-mark]
 ```
 ```
- "subject-exclamation-mark": [2, "always"],
- git commit -m "feat\!: 测试"
- pass 通过校验
+"subject-exclamation-mark": [2, "always"],
+git commit -m "feat\!: 测试"
+pass 通过校验
 ```
 
 ##### [eferences-empty](https://commitlint.js.org/#/reference-rules?id=references-empty)
