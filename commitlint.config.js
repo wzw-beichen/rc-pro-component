@@ -28,7 +28,6 @@ module.exports = {
         "revert",
         // 打包: 🔨 项目打包发布
         "build",
-        "feat!",
       ],
     ],
     "type-empty": [2, "never"],
@@ -42,7 +41,7 @@ module.exports = {
       return [2, "always", 80];
     },
     "subject-exclamation-mark": [2, "never"],
-    "references-empty": [2, "always"],
+    // "references-empty": [2, "never"],
     // "signed-off-by": [2, "always", "user-email:"],
     // "trailer-exists": [2, "always", "user-email:"],
     // 自定义rule
