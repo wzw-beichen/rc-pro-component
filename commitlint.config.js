@@ -28,6 +28,7 @@ module.exports = {
         "revert",
         // 打包: 🔨 项目打包发布
         "build",
+        "feat!",
       ],
     ],
     "type-empty": [2, "never"],
@@ -36,11 +37,12 @@ module.exports = {
     "type-max-length": [2, "always", 10],
     "subject-empty": [2, "never"],
     "header-min-length": [2, "always", 5],
-    "header-full-stop": [2, "never", "-"],
+    "header-full-stop": [2, "never", "."],
     "header-max-length": () => {
       return [2, "always", 80];
     },
-    "subject-exclamation-mark": [1, "never"],
+    "subject-exclamation-mark": [2, "never"],
+    "references-empty": [2, "always"],
     // "signed-off-by": [2, "always", "user-email:"],
     // "trailer-exists": [2, "always", "user-email:"],
     // 自定义rule

@@ -18,13 +18,13 @@ Header：<type>(<scope>): <subject>
 // 空一行
 <footer>
 ```
-#### rules
+### rules
 `rule` 由 `name` 和 `配置数组` 组成，如：`name: [0, 'always', 72]`，数组中 `第一位` 为 `level`  ，`第二位`为`应用`与`否`，可选`always | never`，`第三位`为`rule的值`。
 `level值和描述`
 | value | 描述  | rule |
 |:--------:|:---------:|:---------:|
 |   0   |  `disable` | 禁用 
-|   1   |  `warning` | ✖警告  
+|   1   |  `warning` | x警告  
 |   2   |  `error`   | <font color="red">✖</font>错误  
 ##### Plain array
 ```
@@ -60,7 +60,6 @@ Header：<type>(<scope>): <subject>
     }
 }
 ```
-<font color="red">✖</font>
 ```
 git commit -m "style: 测试"
 ✖   type must be one of [feat, fix] [type-enum]
@@ -106,7 +105,6 @@ git commit -m "style: 测试"
     }
 }
 ```
-<font color="red">✖</font>
 ```
 git commit -m "style: 测试"
 ✖   type must not be lower-case [type-case]
@@ -121,7 +119,6 @@ git commit -m "style: 测试"
     }
 }
 ```
-<font color="red">✖</font>
 ```
 git commit -m "style测试" 
 ✖   type may not be empty [type-empty]
@@ -137,7 +134,6 @@ git commit -m "style测试"
     }
 }
 ```
-<font color="red">✖</font>
 ```
 git commit -m "feat: 1-"
 ✖   header must not be shorter than 10 characters, current length is 8 [header-min-length]
@@ -152,7 +148,6 @@ git commit -m "feat: 1-"
     }
 }
 ```
-<font color="red">✖</font>
 ```
 git commit -m "feat: 测试最大长度测试最大长度长changdu"
 ✖  header must not be longer than 20 characters, current length is 26 [header-max-length]
@@ -167,8 +162,97 @@ git commit -m "feat: 测试最大长度测试最大长度长changdu"
     }
 }
 ```
-<font color="red">✖</font>
 ```
 git commit -m "feat: 1-"
 ✖  header may not end with full stop [header-full-stop]
 ```
+##### [signed-off-by](https://commitlint.js.org/#/reference-rules?id=signed-off-by)
+```
+// commitlint.config.js
+{
+    rules: {
+        "signed-off-by": [2, "always", "user-email:"],
+    }
+}
+```
+```
+git commit -m "feat: 测试
+
+user: zwei<277319623@qq.com>"
+✖   message must be signed off [signed-off-by]
+```
+```
+git commit -m "feat: 测试
+
+user-email: zwei<277319623@qq.com>"
+```
+
+##### [trailer-exists](https://commitlint.js.org/#/reference-rules?id=trailer-exists)
+```
+// commitlint.config.js
+{
+    rules: {
+        "trailer-exists": [2, "always", "user-email:"],
+    }
+}
+```
+```
+git commit -m "feat: 测试
+
+user: zwei<277319623@qq.com>"
+✖   message must be signed off [signed-off-by]
+```
+```
+git commit -m "feat: 测试
+
+user-email: zwei<277319623@qq.com>"
+```
+
+##### 自定义rule
+```
+{
+    rules: {
+       "custom-rule": [1, "always"],
+    },
+    plugins: [
+        {
+        rules: {
+            // 定义自定义rule校验方法
+            "custom-rule": (commit) => {
+            console.log("commit", commit);
+            const { subject } = commit;
+            const HELLO_WORLD = "Hello World";
+            return [
+                subject?.includes(HELLO_WORLD),
+                `Your subject should contain ${HELLO_WORLD} message`,
+            ];
+            },
+        },
+        },
+    ],
+}
+```
+
+##### [subject-exclamation-mark](https://commitlint.js.org/#/reference-rules?id=subject-exclamation-mark)
+```
+ rules: {
+    "type-enum": [
+      2,
+      "always",
+      ["feat!"]
+     ],
+    "subject-exclamation-mark": [2, "never"],
+ }
+```
+```
+git commit -m "feat\!: 测试"
+✖   subject must not have an exclamation mark in the subject to identify a breaking change [subject-exclamation-mark]
+```
+```
+ "subject-exclamation-mark": [2, "always"],
+ git commit -m "feat\!: 测试"
+ pass 通过校验
+```
+
+##### [eferences-empty](https://commitlint.js.org/#/reference-rules?id=references-empty)
+**待理解**
