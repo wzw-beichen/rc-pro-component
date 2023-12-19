@@ -208,7 +208,7 @@ git commit -m "feat: 测试
 user-email: zwei<277319623@qq.com>"
 ```
 
-##### 自定义rule
+##### [自定义rule](https://commitlint.js.org/#/reference-plugins?id=rules-in-plugins)
 ```
 {
     rules: {

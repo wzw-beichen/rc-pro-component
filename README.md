@@ -461,7 +461,7 @@ npm install cz-git -D
 7、在项目根目录新建`commitlint.config.js`
 ```
 MAC可以使用以下命令创建文件
-echo >commitlint1.config.js
+echo >commitlint.config.js
 ```
 ```
 // commitlint.config.js
