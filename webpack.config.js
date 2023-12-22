@@ -107,6 +107,7 @@ module.exports = {
     alias: {
       "@components": path.resolve(__dirname, "./src/components"),
       "@constants": path.resolve(__dirname, "./src/constants"),
+      "@pages": path.resolve(__dirname, "./src/pages"),
     },
     /**
      * 尝试按顺序解析这些后缀名。如果有多个文件有相同的名字，
