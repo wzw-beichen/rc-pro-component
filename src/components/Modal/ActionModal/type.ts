@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ComponentClass, FC, ReactNode } from "react";
 import { ModalProps } from "antd";
 import { Merge } from "c-fn-utils";
 
@@ -19,6 +19,11 @@ export type ActionModalProps = {
   triggerChange?: (open: boolean) => void;
   onInit?: () => void;
   btn?: ReactNode;
-  btnClick?: (e?: React.MouseEvent<HTMLSpanElement>) => void;
+  /** 包裹的组件，默认span */
+  component?: string | FC<any> | ComponentClass<any>;
   titleBold?: boolean;
+};
+
+export type ActionModalRef = {
+  triggerOpen: (visible: boolean) => void;
 };

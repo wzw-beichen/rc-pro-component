@@ -2,6 +2,7 @@ import React, { ChangeEvent, FocusEvent, Ref } from "react";
 import { Input, InputProps, InputRef } from "antd";
 import { Merge } from "c-fn-utils";
 import TrimmedTextArea from "../TrimmedTextArea";
+import TrimmedInputWithSelect from "../TrimmedInputWithSelect";
 
 export type TrimmedInputProps = Merge<
   InputProps,
@@ -39,4 +40,5 @@ const TrimmedInput = (props: TrimmedInputProps) => {
 };
 
 TrimmedInput.TextArea = TrimmedTextArea;
+TrimmedInput.WithSelect = TrimmedInputWithSelect;
 export default TrimmedInput;

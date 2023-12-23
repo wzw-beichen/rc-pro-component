@@ -15,7 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "antd": "^5.12.4",
-    "c-fn-utils": "^1.0.26",
+    "c-fn-utils": "^1.0.27",
     "classnames": "^2.3.2",
     "dayjs": "^1.11.10",
     "pinyin-pro": "^3.18.5",
