@@ -1,0 +1,57 @@
+.copy_text {
+  display: flex;
+  position: relative;
+  overflow: hidden;
+
+  .text_ellipsis {
+    font-size: 14px;
+    line-height: 20px;
+    word-break: break-all;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .single_ellipsis {
+    white-space: nowrap;
+  }
+
+  .multLine_ellipsis {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    text-align: start;
+
+    &::before {
+      content: "";
+      float: right;
+      width: 0;
+      height: calc(100% - 18px);
+    }
+
+    &::after {
+      position: absolute;
+      content: "";
+      width: 100%;
+      height: 100%;
+      background-color: @page-background-color;
+    }
+  }
+  .copy_icon {
+    font-size: 16px;
+    cursor: pointer;
+    padding-left: 1px;
+
+    &:hover {
+      color: @primary-color;
+    }
+  }
+
+  .before_copy_icon {
+    float: right;
+    clear: both;
+  }
+
+  .after_copy_icon {
+    position: relative;
+    top: 2px;
+  }
+}

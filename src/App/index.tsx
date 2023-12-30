@@ -8,8 +8,10 @@ import { BasicCascader } from "@components/Cascader";
 import { RangeInputNumber } from "@components/InputNumber";
 import { FormItemShouldUpdate } from "@components/Form";
 import { ActionModal, ActionModalRef } from "@components/Modal";
+import { Text } from "@components/Text";
 import { Button, Form, Space } from "antd";
 import styles from "./index.module.less";
+import "./index.less";
 
 const App = () => {
   const name: string = "Hello App";
@@ -18,8 +20,52 @@ const App = () => {
   const ref = useRef<ActionModalRef>();
   return (
     <div>
+      <div
+        style={{ display: "flex", justifyContent: "center", marginBottom: 200 }}
+      >
+        <div style={{ width: "40%", background: "red" }}>2222</div>
+
+        <Text.MiddleEllipsis commonStyle={{ background: "orange" }}>
+          孩童时期的孩童时期孩童时期AAAAAAAA111111AA1png
+        </Text.MiddleEllipsis>
+
+        <div style={{ width: "24%", background: "blue" }}>3333</div>
+      </div>
+
+      {/* <div
+        style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}
+      >
+        <div style={{ width: "40%", background: "red" }}>1111</div>
+        <Text.Copy style={{ padding: "0 10px" }}>
+          孩童时期的亚索经常把村里人对他的评价信以为真：好听的时候，他的出生是一次判断失误；不好听的时候，他是个永远无法挽回的过错。
+          和大多数痛苦一样，这些话语也包含着些许真相。他的母亲原本是一位抚养着独生子的寡妇，而那个本应作为亚索父亲的人则如同金秋的微风般吹进了她的生活。随后他不等艾欧尼亚的寒冬降临到这个家庭，
+        </Text.Copy>
+        <div style={{ width: "24%", background: "blue" }}>1111</div>
+      </div> */}
+
+      <div
+        style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}
+      >
+        <div style={{ width: "40%", background: "red" }}>1111</div>
+        <Text.Copy style={{ padding: "0 10px" }} ellipsis={{ rows: 2 }}>
+          孩童时期的亚索经常把村里人对他的评价信以为真：好听的时候，他的出生是一次判断失误；不好听的时候，他是个永远无法挽回的过错。
+          和大多数痛苦一样，这些话语也包含着些许真相。他的母亲原本是一位抚养着独生子的寡妇，而那个本应作为亚索父亲的人则如同金秋的微风般吹进了她的生活。随后他不等艾欧尼亚的寒冬降临到这个家庭，
+        </Text.Copy>
+        <div style={{ width: "24%", background: "blue" }}>1111</div>
+      </div>
+
+      <div
+        style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}
+      >
+        <div style={{ width: "40%", background: "red" }}>1111</div>
+        <Text.Copy style={{ padding: "0 10px" }} ellipsis={{ rows: 2 }}>
+          AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA111111
+        </Text.Copy>
+        <div style={{ width: "24%", background: "blue" }}>1111</div>
+      </div>
+
       <Space>
-        <ActionModal
+        {/* <ActionModal
           btn={
             <Button
               onClick={() => {
@@ -32,12 +78,61 @@ const App = () => {
           titleBold
           modalProps={{
             title: "111",
+            width: 550,
           }}
         >
-          <Button>ActionModal1</Button>
-        </ActionModal>
-        <ActionModal btn={"ActionModal22"} component={Button}>
-          <Button>ActionModal22</Button>
+          <ActionModal
+            btn={
+              <Button
+                onClick={() => {
+                  console.log("点击了ActionModal11");
+                }}
+              >
+                ActionModal22
+              </Button>
+            }
+            titleBold
+            dragable
+            modalProps={{
+              title: "111",
+              width: 550,
+              centered: true,
+            }}
+          >
+            <ActionModal
+              dragable
+              btn={
+                <Button
+                  onClick={() => {
+                    console.log("点击了ActionModal11");
+                  }}
+                >
+                  ActionModal33
+                </Button>
+              }
+            >
+              <Button>ActionModal33</Button>
+            </ActionModal>
+          </ActionModal>
+        </ActionModal> */}
+        <ActionModal
+          btn={"ActionModal22"}
+          modalProps={{
+            title: "111",
+            width: 550,
+            centered: true,
+          }}
+          dragable
+          ref={ref}
+          component={Button}
+        >
+          <Button
+            onClick={() => {
+              console.log("ref", ref.current);
+            }}
+          >
+            ActionModal22
+          </Button>
         </ActionModal>
         <ActionModal>
           <Button>ActionModal33</Button>

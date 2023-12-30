@@ -1,0 +1,30 @@
+.text_wrap {
+  line-height: 1.5;
+  height: 1.5em;
+  overflow: hidden;
+  flex: 1;
+  width: 0;
+  text-align: start;
+
+  .text {
+    background: @primary-color;
+    color: @white;
+    max-height: 3em; /*最大高度为2行*/
+    word-break: break-all;
+  }
+
+  .text_title {
+    position: relative;
+    background: @primary-color;
+    color: @white;
+    top: -3em;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+    &::before {
+      content: attr(data-title);
+      float: right;
+    }
+  }
+}

@@ -63,7 +63,15 @@ module.exports = {
           {
             loader: "less-loader",
             options: {
-              sourceMap: true,
+              sourceMap: isProduction,
+            },
+          },
+          {
+            loader: "style-resources-loader",
+            options: {
+              patterns: [
+                path.resolve(__dirname, "./src/assets/less/theme.less"),
+              ],
             },
           },
         ],
@@ -85,13 +93,21 @@ module.exports = {
             options: {
               /** `importLoaders` 选项允许你配置在 `css-loader` 之前有多少 `loader` 应用于 `@imported` 资源与 `CSS` 模块/ICSS 导入 */
               importLoaders: 2,
-              sourceMap: true,
+              sourceMap: isProduction,
             },
           },
           {
             loader: "less-loader",
             options: {
-              sourceMap: true,
+              sourceMap: isProduction,
+            },
+          },
+          {
+            loader: "style-resources-loader",
+            options: {
+              patterns: [
+                path.resolve(__dirname, "./src/assets/less/theme.less"),
+              ],
             },
           },
         ],
@@ -108,6 +124,8 @@ module.exports = {
       "@components": path.resolve(__dirname, "./src/components"),
       "@constants": path.resolve(__dirname, "./src/constants"),
       "@pages": path.resolve(__dirname, "./src/pages"),
+      "@assets": path.resolve(__dirname, "./src/assets"),
+      "@src": path.resolve(__dirname, "./src"),
     },
     /**
      * 尝试按顺序解析这些后缀名。如果有多个文件有相同的名字，

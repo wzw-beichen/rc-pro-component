@@ -7,6 +7,8 @@ import React, {
 } from "react";
 import { Modal } from "antd";
 import classnames from "classnames";
+import { compose } from "c-fn-utils";
+import { DragableHoc } from "../Hoc";
 import { ActionModalRef, ActionModalProps } from "./type";
 import styles from "./index.module.less";
 
@@ -101,4 +103,4 @@ const ActionModal = forwardRef<ActionModalRef, ActionModalProps>(
   }
 );
 
-export default ActionModal;
+export default compose(DragableHoc)(ActionModal);

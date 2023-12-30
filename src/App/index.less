@@ -1,0 +1,28 @@
+.text {
+  padding: 2px 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: 20px;
+
+  &::before {
+    content: "";
+    float: right;
+    width: 0;
+    // height: calc(100% - 24px);
+    height: 100%;
+    margin-bottom: -24px;
+  }
+}
+
+.wrap {
+  display: flex;
+}
+
+.btn {
+  float: right;
+  height: 22px;
+  clear: both;
+  //   margin-top: 45px;
+}
