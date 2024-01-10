@@ -28,7 +28,7 @@ this.updateStore(nextStore);
 ```
 this.resetWithFieldInitialValue();
 ```
-* 通知订阅的组件 `Field` ，`store` 改变通知 `Field`， 由 `Field` 内部判断是否重新渲染。
+* 通知订阅的组件 `Field` ，`store` 改变通知 `Field`， 由 `Field` 内部判断是否重新渲染
 ```
 this.notifyObservers(preStore, null, { type: "reset"  })
 ```
@@ -66,7 +66,7 @@ namePathList.forEach((namePath) => {
 ```
 this.resetWithFieldInitialValue({ namePathList });
 ```
-* 通知订阅的组件 `Field` ，`store` 改变通知 `Field`， 由 `Field` 内部判断是否重新渲染。
+* 通知订阅的组件 `Field` ，`store` 改变通知 `Field`， 由 `Field` 内部判断是否重新渲染
 ```
 this.notifyObservers(preStore, namePathList, { type: "reset"  })
 ```
