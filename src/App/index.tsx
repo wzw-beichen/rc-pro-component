@@ -10,6 +10,7 @@ import { FormItemShouldUpdate } from "@components/Form";
 import { ActionModal, ActionModalRef } from "@components/Modal";
 import { Text } from "@components/Text";
 import { Button, Form, Space } from "antd";
+import DataDemo from "./Data";
 import styles from "./index.module.less";
 import "./index.less";
 
@@ -20,8 +21,14 @@ const App = () => {
   const ref = useRef<ActionModalRef>();
   return (
     <div>
+      <DataDemo />
       <div
-        style={{ display: "flex", justifyContent: "center", marginBottom: 200 }}
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: 200,
+          marginTop: 50,
+        }}
       >
         <div style={{ width: "40%", background: "red" }}>2222</div>
 
@@ -120,7 +127,6 @@ const App = () => {
           modalProps={{
             title: "111",
             width: 550,
-            centered: true,
           }}
           dragable
           ref={ref}
@@ -144,6 +150,7 @@ const App = () => {
           datepicker: ["2023-11-22", "2023-12-15"],
           cascader: "zhonghuamen",
           users: [{}, {}, {}],
+          input: "input11",
         }}
       >
         <Form.Item name="input">
@@ -187,7 +194,6 @@ const App = () => {
           relatedKey={["input", "inputNumber", ["users", 0, "name"]]}
         >
           {(changedValue: Record<string, any>) => {
-            console.log("FormItemShouldUpdate", changedValue);
             return <TrimmedInput />;
           }}
         </FormItemShouldUpdate>

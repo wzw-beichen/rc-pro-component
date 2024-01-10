@@ -17,6 +17,7 @@ module.exports = {
     path: path.join(__dirname, "/dist"),
     filename: "js/[name].[hash:8].js",
   },
+  devtool: "source-map",
   /** 能够实时重新加载的基本的 web server */
   devServer: {
     port: 8000,

@@ -33,7 +33,7 @@ const Item = (props: ItemProps) => {
 
   const cloneChildren = () => {
     return Children.map(children, (child) => {
-      if (isValidElement(child) && !isValidElement(child.props?.children)) {
+      if (isValidElement(child) && typeof child.type !== "string") {
         return cloneElement(child, {
           ...mergeCommonProps,
           ...child?.props,
