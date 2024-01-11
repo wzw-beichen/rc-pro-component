@@ -343,6 +343,8 @@ export class DataStore {
     const prevStore = this.store;
     if (!nameList) {
       const nextStore = merge(this.initialValues);
+
+      // `store` 变为 `initialValues`
       this.updateStore(nextStore);
 
       this.resetWithFieldInitialValue();
@@ -363,6 +365,7 @@ export class DataStore {
     namePathList.forEach((namePath) => {
       const initialValue = this.getInitialValue(namePath);
 
+      // 仅需要将 `store` 中 `namePath` 重置 `initialValue`
       const nextStore = setValue(this.store, namePath, initialValue);
       this.updateStore(nextStore);
     });
