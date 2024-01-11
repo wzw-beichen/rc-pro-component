@@ -95,6 +95,7 @@ const DataDemo = () => {
           initialValues={{
             name: "name",
             age: "age",
+            C: undefined,
           }}
           onValuesChange={(...rest) => {
             console.log("onValuesChange", rest);
@@ -254,7 +255,11 @@ const DataDemo = () => {
                   return prevValue.A !== nextValue.A;
                 }}
               >
-                <Data.Item name="C" getValueFromEvent={(e) => e.target.value}>
+                <Data.Item
+                  initialValue={"CCCC"}
+                  name="C"
+                  getValueFromEvent={(e) => e.target.value}
+                >
                   <ChildItem data-key="C" />
                 </Data.Item>
               </Data.Item>

@@ -271,7 +271,6 @@ export class DataStore {
           const namePath = field.getNamePath();
           const dataInitialValue = this.getInitialValue(namePath);
 
-          console.log("dataInitialValue", dataInitialValue);
           if (dataInitialValue !== undefined) {
             // Warning if conflict with form initialValues and do not modify value
             // 如果与数据初始值冲突且不修改值，则发出警告。
@@ -333,7 +332,6 @@ export class DataStore {
       requiredFieldEntities = fieldEntities;
     }
 
-    console.log("requiredFieldEntities", requiredFieldEntities);
     resetWithFields(requiredFieldEntities);
   };
 
@@ -451,6 +449,8 @@ export class DataStore {
   /**
    * This only trigger when a field is on constructor to avoid we get initialValue too late
    * 这只会在构造函数上有字段时触发，以避免我们获取initialValue太晚
+   * `Field` `constructor` 上就会触发，该方法目的是将 `Field` 上 `initialValue` 放到 `store` 里面去
+   * `Data` 上未设置 `Field` 初始值 `(initialValues)` ，才将 `Field` 上的`initialValue` 放到 `store` 里面，不然会使用 `Data` 上的初始值
    */
   private initEntityValue = (entity: FieldEntity) => {
     const { initialValue } = entity.props;
@@ -458,7 +458,10 @@ export class DataStore {
     if (initialValue !== undefined) {
       const namePath = entity.getNamePath();
       const prevValue = getValue(this.store, namePath);
-      // 当Data设置了初始值，Field上设置初始值无效
+      // 当 Data 设置了初始值，Field 上设置初始值无效
+      // 当 Data 为当前 Field 设置了初始值，则不会再将 Field initialValue 的值放进 store 里面
+      // 注意：当 Data 设置 Field 初始值为 undefined ，也会使用 Field 上的 initialValue
+      // 若需要 Data initialValues 优先级始终大于 Field initialValue ，可以判断当前name是否存在于 initialValues
       if (prevValue === undefined) {
         const nextStore = setValue(this.store, namePath, initialValue);
         this.updateStore(nextStore);
@@ -482,6 +485,19 @@ export class DataStore {
     this.notifyWatch([namePath], "register");
 
     // Set initial values
+    const { initialValue } = entity.props;
+    if (initialValue !== undefined) {
+      const prevStore = this.store;
+
+      this.resetWithFieldInitialValue({
+        entities: [entity],
+        skipExist: true,
+      });
+      this.notifyObservers(prevStore, [namePath], {
+        type: "valueUpdate",
+        source: "initialValue",
+      });
+    }
 
     // un-register field callback
     return (
@@ -490,7 +506,7 @@ export class DataStore {
       subNamePath: InternalNamePath = []
     ) => {
       this.fieldEntities = this.fieldEntities.filter((item) => item !== entity);
-      console.log("this.fieldEntities", this.fieldEntities);
+
       // Clean up store value if not preserve
       if (
         !this.isMergedPreserve(preserve) &&

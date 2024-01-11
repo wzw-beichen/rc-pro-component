@@ -11,6 +11,17 @@ public getFieldValue = () => {
 ```
 ##### getFieldsValue
 
+##### resetWithFieldInitialValue
+参数优先级 `entities` > `namePathList` > `不传`
+将 `Field` 上的 `initialValue` 的值赋值到 `store` 中
+```
+private resetWithFieldInitialValue = (info?: {
+  entities?: FieldEntity[];
+  namePathList?: InternalNamePath[];
+  skipExist?: boolean;
+}) => {}
+```
+
 ##### resetFields
 `Data` 的 `initialValues` 拥有最高优先级  
 
@@ -116,6 +127,31 @@ private resetFields = (nameList?: NamePath[]) => {
 ##### dispath
 
 ##### initEntityValue
+`Field` `constructor` 上就会触发， 该方法目的是将 `Field` 上 `initialValue` 放到 `store` 里面去  
+
+`Data` 上未设置 `Field` 初始值 `(initialValues)` ，才将 `Field` 上的`initialValue` 放到 `store` 里面，不然会使用 `Data` 上的初始值  
+
+`Field` 的初始值优先级    
+`Data` 的 `initialValues` 拥有最高优先级  
+`Field` 的 `initialValue` 次之  
+
+注意：当 `Data` 设置 `Field` 初始值为 `undefined` ，也会使用 `Field` 上的 `initialValue`  
+若需要 `Data` `initialValues` 优先级始终大于 `Field` `initialValue` ，可以判断 `Field` `name`是否存在于 `initialValues`  
+
+```
+private initEntityValue = (field: FieldEntity) => {
+  const { initialValue } = field.props;
+  if (initialValue !== undefined) {
+    const namePath = field.getNamePath();
+    const prevValue = getValue(this.store, namePath);
+
+    if (prevValue === undefined) {
+        const nextStore = setValue(this.store, namePath, initialValue);
+        this.updateStore(nextStore);
+    }
+  }
+}
+```
 
 ##### registerField
 ```
