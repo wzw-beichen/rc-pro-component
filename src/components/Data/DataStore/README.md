@@ -12,14 +12,117 @@ public getFieldValue = () => {
 ##### getFieldsValue
 
 ##### resetWithFieldInitialValue
-参数优先级 `entities` > `namePathList` > `不传`
-将 `Field` 上的 `initialValue` 的值赋值到 `store` 中
+该方法目的将 `Field` 上的 `initialValue` 的值赋值到 `store` 中  
+
+使用字段`Field` `initialValue` 更新 `store`  
+
+传 `entities` 只会重置传递 `entities` `Field`  
+
+传 `namePathList` 只会重置传递 `namePathList` 的 `Field`  
+
+不传递则会重置所有带有 `name` 的 `Field`  
+
+参数优先级 `entities` > `namePathList` > 不传递  
+
+* 筛选出所有带有 `name` 的 `Field`
+```
+const fieldEntities = this.getFieldEntities(true);
+```
+* 循环 `fieldEntities` ， 将有 `initialValue` 的 `Field` 存起来 `cache`
+注意：会存在多个相同 `name`  
+
+* 根据参数不同处理 `requiredFieldEntities`
+  * entities
+  * namePathList
+  * 不传  
+
+* 循环 `requiredFieldEntities`
+  * `Data` 已设置 `inititlValue`
+  * 多个相同 `name` `Field`
+  * `Field` `inititalValue`
+    * `store` 已存在 `value`, `skipExist` 为 `false` 则覆盖`store` 中的值
+    * `skipExist` 为 `true`, 则跳过，不覆盖 `store` 的值
 ```
 private resetWithFieldInitialValue = (info?: {
   entities?: FieldEntity[];
   namePathList?: InternalNamePath[];
   skipExist?: boolean;
-}) => {}
+}) => {
+  const cache = new NameMap<Set<{ entity: FieldEntity; value: any }>>()
+
+  const fieldEntities = this.getFieldEntities(true);
+  fieldEntities.forEach(field => {
+    const { initialValue } = field.props;
+    const namePath = field.getNamePath();
+
+    if (initialValue !== undefined) {
+      const records = cache.get(namePath) || new Set();
+      
+      records.add({ entity: field, value: initialValue });
+      cache.set(namePath, records)
+    }
+  })
+
+  // Reset
+  const resetWithFields = (entities: FieldEntity[]) => {
+    entities.forEach(field => {
+      const { initialValue } = field.props;
+       
+        if (initialValue !== undefined) {
+          const namePath = field.getNamePath();
+          const dataInitialValue = this.getInitialValue(this.store, namePath);
+
+          if (dataInitialValue !== undefined) {
+            warning(
+              false,
+              `Data already set 'initialValues' with path '${namePath.join(
+                "."
+              )}'. Field can not overwrite it.`
+            );
+          } else {
+            const records = cache.get(namePath);
+
+            if (records && records.size > 1) {
+              warning(
+                false,
+                `Multiple Field with path '${namePath.join(
+                  "."
+                )}' set 'initialValue'. Can not decide which one to pick.`
+              );
+            } else if (records) {
+                const originValue = this.getFieldValue(namePath);
+                const isListField = field.isListField();
+                
+                // Set `initialValue`
+                if (!isListField && (!info.skipExist || originValue === undefined)) {
+                    const recordList = Array.from(records);
+                    const nextStore = setValue(this.store, namePath, recordList[0]?.value);
+                    this.updateStore(nextStore);
+                }
+            }
+          }
+
+       }
+    })
+  }
+
+  let requiredFieldEntities: FieldEntity = fieldEntities;
+  if (info.entities) {
+    requiredFieldEntities = info.entities;
+  } else if (info.namePathList) {
+    requiredFieldEntities = [];
+
+    info.namePathList.forEach(namePath => {
+        const records = cache.get(namePath);
+
+        if (records.size) {
+           requiredFieldEntities.push(...Array.from(records).map(r => r.entity))
+        }
+    })
+  }
+
+  resetWithFields(requiredFieldEntities) 
+}
 ```
 
 ##### resetFields

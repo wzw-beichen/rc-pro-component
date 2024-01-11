@@ -25,7 +25,9 @@ export class DataStore {
 
   private subscribable = true;
 
-  private store: Store = {};
+  private store: Store = {
+    C: "CCCAAA",
+  };
 
   private fieldEntities: FieldEntity[] = [];
 
@@ -230,7 +232,7 @@ export class DataStore {
    * Reset Field with field `initialValue` prop.
    * Can pass `entities` or `namePathList` or just nothing.
    */
-  // 使用字段initalValue prop重置Field
+  // 使用字段initialValue prop重置Field
   // 可以传递entities、namePathList或者什么都不传递
   // 传entities 只会重置传递entities Field
   // 传namePathList 只会重置传递 `namePathList` 的 `Field`
@@ -240,7 +242,7 @@ export class DataStore {
     entities?: FieldEntity[];
     // 二维数组
     namePathList?: InternalNamePath[];
-    // Skip reset 跳过重置
+    // Skip reset 存在是否跳过，默认false
     skipExist?: boolean;
   }) => {
     // Create cache
@@ -262,6 +264,8 @@ export class DataStore {
       }
     });
 
+    console.log("cache", cache);
+
     // Reset
     const resetWithFields = (entities: FieldEntity[]) => {
       entities.forEach((field) => {
@@ -274,24 +278,35 @@ export class DataStore {
           if (dataInitialValue !== undefined) {
             // Warning if conflict with form initialValues and do not modify value
             // 如果与数据初始值冲突且不修改值，则发出警告。
-            // 数据已经设置初始值了，Field无法覆盖初始值
-            // Data上initialValues设置了初始值，且Field上也设置了初始值, 以Data上为准，Field设置初始值无法覆盖。
-            // 一般情况下 优先级 data initialValues > Field initialValue
-            // 但是当data initalValues里面对于namePath的值为undefined时，
-            // 对应namePath的Field initialValue有值，以Field初始值为准。
-            // 因为只判断了是否等于undefined，而没有去判断initialValue是否存在于data initialValues上
+            // 数据已经设置初始值了，`Field` 无法覆盖初始值
+            // `Data` 上 `initialValues` 设置了初始值，且 `Field` 上也设置了初始值, 以 `Data` 上为准，`Field` 设置初始值无法覆盖。
+            // 一般情况下 优先级 `data` `initialValues` > `Field` `initialValue`
+            // 但是当 `Data` `initalValues` 里面对于 `namePath`的值为 `undefined` 时，
+            // 对应 `namePath` 的 `Field` `initialValue` 有值，以 `Field` 初始值为准。
+            // 因为只判断了是否等于 `undefined` ，而没有去判断 `initialValue` 是否存在于 `Data` `initialValues` 上
+            warning(
+              false,
+              `Form already set 'initialValues' with path '${namePath.join(
+                "."
+              )}'. Field can not overwrite it.`
+            );
           } else {
             const records = cache.get(namePath);
 
             if (records && records.size > 1) {
-              console.log("111");
               // Warning if multiple field set `initialValue`and do not modify value
-              // 多Field(相同name)设置initialValue且不修改值，则发出警告。
-              // decide 决定; which one 哪一个
+              // 多 `Field` (相同name)设置 `initialValue` 且不修改值，则发出警告。
+              // `decide` 决定; `which one` 哪一个
+              warning(
+                false,
+                `Multiple Field with path '${namePath.join(
+                  "."
+                )}' set 'initialValue'. Can not decide which one to pick.`
+              );
             } else if (records) {
-              // 调用resetWithFieldInitialValue之前，已经用initialValues更新了store；
-              // 所以需要在取一下store上namePath的值，为undefined在更新初始值，
-              // 不然就代表initialValues设置了对应字段，可以设置skipExist来控制是否使用Field上初始值来更新
+              // `store` 上可能存在值，需要在取一下 `store` 上 `namePath` 的值，为 `undefined` 在更新初始值，
+              // 当 `store` 上存在值，可以设置 `skipExist` 来控制是否使用 `Field` 上初始值来更新
+              // `skipExist` `true` 跳过 不修改值  `false` 不跳过 用 `value` 修改 `store` 中的值
               const originValue = this.getFieldValue(namePath);
               const isListField = field.isListField();
 
@@ -493,9 +508,10 @@ export class DataStore {
         entities: [entity],
         skipExist: true,
       });
+
       this.notifyObservers(prevStore, [namePath], {
         type: "valueUpdate",
-        source: "initialValue",
+        source: "register",
       });
     }
 

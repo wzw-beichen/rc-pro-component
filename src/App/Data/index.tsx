@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Data } from "@components/Data";
 import { Button, Col, Input, Row, Space } from "antd";
 import CloneTransmit from "@components/CloneTransmit";
@@ -14,6 +14,8 @@ const DataDemo = () => {
   const [numToggle, setNumToggle] = useState(true);
   const [data] = Data.useData();
   console.log("data", data);
+
+  useEffect(() => {}, []);
 
   return (
     <>
@@ -95,7 +97,7 @@ const DataDemo = () => {
           initialValues={{
             name: "name",
             age: "age",
-            C: undefined,
+            // C: "CCCAAA",
           }}
           onValuesChange={(...rest) => {
             console.log("onValuesChange", rest);
@@ -256,7 +258,7 @@ const DataDemo = () => {
                 }}
               >
                 <Data.Item
-                  initialValue={"CCCC"}
+                  initialValue={"CCCBBB"}
                   name="C"
                   getValueFromEvent={(e) => e.target.value}
                 >

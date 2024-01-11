@@ -76,7 +76,7 @@ export type ValueUpdateInfo = {
   type: "valueUpdate";
   // internal 里面的 onChange
   // extennal 外部的 setFieldsValue
-  source: "internal" | "external" | "initialValue";
+  source: "internal" | "external" | "register";
 };
 
 export type SetFieldInfo = {
