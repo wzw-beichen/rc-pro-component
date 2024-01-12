@@ -1,6 +1,6 @@
 import { get as getValue, set as setValue, merge, NameMap } from "c-fn-utils";
 import warning from "rc-util/lib/warning";
-import { HOOK_MARK } from "../constants";
+import { HOOK_MARK, INVALIDATE_NAME_PATH } from "../constants";
 import {
   FilterFunc,
   GetFieldsValueConfig,
@@ -13,7 +13,12 @@ import {
 } from "./type";
 import { InternalNamePath, NamePath, Store } from "../type";
 import { cloneByNamePathList, getNamePath } from "../utils";
-import { FieldData, FieldEntity, InternalFieldData } from "../Field/type";
+import {
+  FieldData,
+  FieldEntity,
+  InternalFieldData,
+  InvalidateFieldEntity,
+} from "../Field/type";
 import { StoreValue } from "antd/es/form/interface";
 import { Callbacks } from "../Data/type";
 import { containsNamePath } from "../Field/utils";
@@ -221,11 +226,90 @@ export class DataStore {
     return this.fieldEntities.filter((field) => field.getNamePath().length);
   };
 
+  private getFieldsMap = (pure: boolean = false) => {
+    const cache = new NameMap<FieldEntity>();
+
+    const fieldEntities = this.getFieldEntities(pure);
+    fieldEntities.forEach((field) => {
+      const namePath = field.getNamePath();
+      cache.set(namePath, field);
+    });
+    return cache;
+  };
+
+  private getFieldEntitiesForNamePathList = (
+    nameList?: NamePath[] | null
+  ): (FieldEntity | InvalidateFieldEntity)[] => {
+    if (!nameList) {
+      return this.getFieldEntities(true);
+    }
+    const cache = this.getFieldsMap(true);
+    return nameList.map((name) => {
+      const namePath = getNamePath(name);
+
+      return cache.get(namePath) || { [INVALIDATE_NAME_PATH]: namePath };
+    });
+  };
+
   private getFieldsValue = (
     nameList?: NamePath[] | true | GetFieldsValueConfig,
     filterFunc?: FilterFunc
   ): Store => {
-    return this.store;
+    // Fill args
+    // 根据参数不同处理 `nameList`, `filterFunc`
+    let mergedNameList: NamePath[] | true;
+    let mergedFilterFunc: FilterFunc;
+    let mergedStrict: boolean;
+
+    if (nameList === true || Array.isArray(nameList)) {
+      mergedNameList = nameList;
+      mergedFilterFunc = filterFunc;
+    } else if (nameList && typeof nameList === "object") {
+      mergedStrict = nameList.strict;
+      mergedFilterFunc = nameList.filter;
+    }
+
+    if (nameList === true && !mergedFilterFunc) {
+      return this.store;
+    }
+    // 通过 `NameList` 获取完全匹配 `FieldEntities`
+    // 当 `NameList` 为 `null` 时， 返回所有带 `name` 的 `Field`
+    // 会存在 `NameList` 有未注册的 `namePath`，若是这种情况，则返回 `{ [INVALIDATE_NAME_PATH]: namePath }`
+    const fieldEntities = this.getFieldEntitiesForNamePathList(
+      Array.isArray(mergedNameList) ? mergedNameList : null
+    );
+
+    const filteredNameList: NamePath[] = [];
+
+    fieldEntities.forEach((entity) => {
+      const namePath =
+        INVALIDATE_NAME_PATH in entity
+          ? entity[INVALIDATE_NAME_PATH]
+          : entity.getNamePath();
+      // 当 `strict` 时为 `true` 时，则不取 `List` 上的值，改为取每个 `Field` 上的值
+      // 当 `strict` 为 `true` 时会仅匹配 `Field` 的值。例如 `{ list: [{ bamboo: 1, little: 2 }] }` 中，
+      // 如果 `List` 仅绑定了 `bamboo` 字段，那么 g`etFieldsValue({ strict: true })` 会只获得 `{ list: [{ bamboo: 1 }] }`
+      if (mergedStrict) {
+        if ((entity as FieldEntity)?.isList?.()) {
+          return;
+        }
+      } else if (!mergedNameList && (entity as FieldEntity).isListField?.()) {
+        // 当 `strict` 为 false，不取 `Field` 上的值，直接取 `List` 的值
+        // 当 `List` 有匹配 `Item` 的值，也会一起返回，因为是直接获取的 `List` 的值
+        return;
+      }
+
+      if (!mergedFilterFunc) {
+        filteredNameList.push(namePath);
+      } else {
+        const meta = "getMeta" in entity ? entity.getMeta() : null;
+        if (mergedFilterFunc(meta)) {
+          filteredNameList.push(namePath);
+        }
+      }
+    });
+
+    return cloneByNamePathList(this.store, filteredNameList.map(getNamePath));
   };
 
   /**
@@ -263,8 +347,6 @@ export class DataStore {
         cache.set(namePath, records);
       }
     });
-
-    console.log("cache", cache);
 
     // Reset
     const resetWithFields = (entities: FieldEntity[]) => {
@@ -504,11 +586,12 @@ export class DataStore {
     if (initialValue !== undefined) {
       const prevStore = this.store;
 
+      // 当 `store` 存在值，则不用 `initialValue` 覆盖 `store` 的值
       this.resetWithFieldInitialValue({
         entities: [entity],
         skipExist: true,
       });
-
+      // 调用 `resetWithFieldInitialValue` 更新 `store`，通知 `Field` 渲染
       this.notifyObservers(prevStore, [namePath], {
         type: "valueUpdate",
         source: "register",
@@ -538,7 +621,6 @@ export class DataStore {
     switch (action.type) {
       case "updateValue": {
         const { namePath, value } = action;
-        console.log("namePath, value", namePath, value);
         this.updateValue(namePath, value);
         return;
       }
@@ -574,8 +656,10 @@ export class DataStore {
     const nextStore = setValue(this.store, namePath, value);
     // value为字符串，value[name];
 
+    // 更新 `store`
     this.updateStore(nextStore);
 
+    // 通知 `Field` 渲染
     this.notifyObservers(prevStore, [namePath], {
       type: "valueUpdate",
       source: "internal",

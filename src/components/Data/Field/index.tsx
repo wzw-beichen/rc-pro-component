@@ -56,6 +56,9 @@ export type InternalFieldProps<Values = any> = {
   preserve?: boolean;
 
   /** @private Passed by Data.List props. Do not use since it will break by path check. */
+  isList?: boolean;
+
+  /** @private Passed by Data.List props. Do not use since it will break by path check. */
   isListField?: boolean;
   /**
    * 将`context`作为`prop`，而不是`context`api传递.
@@ -302,6 +305,8 @@ class Field extends Component<InternalFieldProps, FieldState> {
   public isFieldTouched = () => !!this.touched;
 
   public isListField = () => !!this.props.isListField;
+
+  public isList = () => !!this.props.isList;
 
   public isPreserve = () => !!this.props.preserve;
 

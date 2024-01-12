@@ -1,4 +1,5 @@
 import { NotifyInfo } from "../DataStore/type";
+import { INVALIDATE_NAME_PATH } from "../constants";
 import { InternalNamePath, NamePath, Store, StoreValue } from "../type";
 
 export type ValueNotifyInfo = NotifyInfo & {
@@ -14,6 +15,7 @@ export type FieldEntity = {
   getNamePath: () => InternalNamePath;
   isFieldTouched: () => boolean;
   isPreserve: () => boolean;
+  isList: () => boolean;
   isListField: () => boolean;
   getMeta: () => Meta;
   props: {
@@ -21,6 +23,10 @@ export type FieldEntity = {
     dependencies?: NamePath[];
     isListField?: boolean;
   };
+};
+
+export type InvalidateFieldEntity = {
+  [INVALIDATE_NAME_PATH]: InternalNamePath;
 };
 
 export type Meta = {
