@@ -25,7 +25,10 @@ const TrimmedTextArea = (props: TrimmedTextAreaProps) => {
   const handleBlur = (e: FocusEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     const newValue = value?.trim();
-    onChange?.(newValue);
+    if (value !== newValue) {
+      onChange?.(newValue);
+    }
+
     onBlur?.(e);
   };
 

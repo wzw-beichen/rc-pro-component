@@ -13,6 +13,8 @@ import { getNamePath } from "../utils";
 import { get as getValue, defaultGetValueFormEvent } from "c-fn-utils";
 import { requireUpdate, containsNamePath } from "./utils";
 import isEqual from "rc-util/lib/isEqual";
+import ListContext from "../List/ListContext";
+import { warning } from "rc-util";
 
 type ChildProps = {
   [name: string]: any;
@@ -101,6 +103,8 @@ class Field extends Component<InternalFieldProps, FieldState> {
   // touched 触摸; 接触; 移动; 触及;
   private touched = false;
 
+  private dirty = false;
+
   // ============================== Subscriptions ==============================
   constructor(props: InternalFieldProps) {
     super(props);
@@ -108,6 +112,7 @@ class Field extends Component<InternalFieldProps, FieldState> {
     if (props.fieldContext) {
       const { getInternalHooks } = props.fieldContext;
       const { initEntityValue } = getInternalHooks(HOOK_MARK) as InternalHooks;
+
       initEntityValue(this);
     }
   }
@@ -131,6 +136,8 @@ class Field extends Component<InternalFieldProps, FieldState> {
 
   public componentWillUnmount() {
     this.cancelRegiser();
+
+    this.triggerMetaEvent(true);
     this.mounted = false;
   }
 
@@ -147,6 +154,7 @@ class Field extends Component<InternalFieldProps, FieldState> {
   public getNamePath = (): InternalNamePath => {
     const { name, fieldContext } = this.props;
     const { prefixName = [] } = fieldContext as InternalDataInstance;
+
     return name !== undefined ? [...prefixName, ...name] : [];
   };
 
@@ -209,6 +217,7 @@ class Field extends Component<InternalFieldProps, FieldState> {
       prevValue !== currValue
     ) {
       this.touched = true;
+      this.dirty = true;
 
       this.triggerMetaEvent();
     }
@@ -217,6 +226,7 @@ class Field extends Component<InternalFieldProps, FieldState> {
         if (!namePathList || namePathMatch) {
           // Clean up state
           this.touched = false;
+          this.dirty = false;
 
           this.triggerMetaEvent();
           onReset?.();
@@ -233,6 +243,8 @@ class Field extends Component<InternalFieldProps, FieldState> {
           if ("touched" in data) {
             this.touched = data.touched;
           }
+
+          this.dirty = true;
 
           this.triggerMetaEvent();
           this.reRender();
@@ -258,6 +270,20 @@ class Field extends Component<InternalFieldProps, FieldState> {
             prevValue,
             currValue,
             info
+          )
+        ) {
+          this.reRender();
+          return;
+        }
+        break;
+      }
+
+      case "dependenciesUpdate": {
+        const dependencyList = dependencies.map(getNamePath);
+
+        if (
+          dependencyList.some((dependency) =>
+            containsNamePath(info.relatedFields, dependency)
           )
         ) {
           this.reRender();
@@ -304,6 +330,23 @@ class Field extends Component<InternalFieldProps, FieldState> {
 
   public isFieldTouched = () => !!this.touched;
 
+  public isFieldDirty = () => {
+    // Touched or validate or has initialValue
+    const { initialValue, fieldContext } = this.props;
+    if (this.dirty || initialValue !== undefined) {
+      return true;
+    }
+
+    const { getInternalHooks } = fieldContext;
+    const { getInitialValue } = getInternalHooks(HOOK_MARK);
+
+    // Data set initialValue
+    if (getInitialValue(this.getNamePath()) !== undefined) {
+      return true;
+    }
+    return false;
+  };
+
   public isListField = () => !!this.props.isListField;
 
   public isList = () => !!this.props.isList;
@@ -314,6 +357,7 @@ class Field extends Component<InternalFieldProps, FieldState> {
   public getMeta = (): Meta => {
     const meta = {
       touched: this.isFieldTouched(),
+      dirty: this.isFieldDirty(),
       name: this.getNamePath(),
     };
     return meta;
@@ -335,10 +379,13 @@ class Field extends Component<InternalFieldProps, FieldState> {
       const meta = this.getMeta();
       const controlled = this.getControlled();
       const nodeChildren = children(controlled, meta, fieldContext);
-      const childNode = React.cloneElement(
-        nodeChildren as React.ReactElement,
-        controlled
-      );
+      let childNode = nodeChildren;
+      if (!Array.isArray(nodeChildren)) {
+        childNode = React.cloneElement(
+          nodeChildren as React.ReactElement,
+          controlled
+        );
+      }
       return {
         ...this.getOnlyChild(childNode),
         isFunction: true,
@@ -399,6 +446,7 @@ class Field extends Component<InternalFieldProps, FieldState> {
     control[trigger] = (...args: EventArgs) => {
       // Mark as touched
       this.touched = true;
+      this.dirty = true;
 
       this.triggerMetaEvent();
 
@@ -432,6 +480,7 @@ class Field extends Component<InternalFieldProps, FieldState> {
 
     const { child, isFunction } = this.getOnlyChild(children);
     let returnChildNode = children;
+
     if (isFunction) {
       returnChildNode = child;
     } else if (isValidElement(child)) {
@@ -449,6 +498,7 @@ class Field extends Component<InternalFieldProps, FieldState> {
 const WrapperField = <Values = any,>(props: FieldProps<Values>) => {
   const { name, ...restProps } = props;
   const fieldContext = useContext(FieldContext);
+  const listContext = useContext(ListContext);
 
   const namePath = name !== undefined ? getNamePath(name) : undefined;
 
@@ -457,15 +507,31 @@ const WrapperField = <Values = any,>(props: FieldProps<Values>) => {
     key = `_${(namePath || []).join("_")}`;
   }
 
+  // Warning if it's a directly list field.
+  // We can still support multiple level field preserve.
+  if (
+    restProps.isListField &&
+    restProps.preserve === false &&
+    namePath.length <= 1
+  ) {
+    warning(false, "`preserve` should not apply on Data.List fields.");
+  }
+
   return (
-    <Field
-      data-key={key}
-      key={key}
-      name={namePath}
-      fieldContext={fieldContext}
-      isListField={false}
-      {...restProps}
-    />
+    <div>
+      {!restProps.shouldUpdate && (
+        <span style={{ marginRight: 10 }}>
+          {namePath?.toString() || "无name"}:
+        </span>
+      )}
+      <Field
+        key={key}
+        name={namePath}
+        fieldContext={fieldContext}
+        isListField={!!listContext}
+        {...restProps}
+      />
+    </div>
   );
 };
 export default WrapperField;

@@ -13,6 +13,7 @@ export type DataProps<Values = any> = {
   data?: DataInstance<Values>;
   children?: RenderProps | ReactNode;
   component?: false | string | React.FC<any> | React.ComponentClass<any>;
+  fields?: FieldData[];
   name?: string;
   onValuesChange?: Callbacks["onValuesChange"];
   onFieldsChange?: Callbacks["onFieldsChange"];

@@ -1,19 +1,28 @@
 import React, { ChangeEvent, FocusEvent, Ref } from "react";
 import { Input, InputProps, InputRef } from "antd";
 import { Merge } from "c-fn-utils";
-import TrimmedTextArea from "../TrimmedTextArea";
-import TrimmedInputWithSelect from "../TrimmedInputWithSelect";
+import classNames from "classnames";
+import styles from "./index.module.less";
 
 export type TrimmedInputProps = Merge<
   InputProps,
   {
     onChange?: (value?: string, e?: ChangeEvent<HTMLInputElement>) => void;
     inputRef?: Ref<InputRef>;
+    /** 聚焦显示清除图标 */
+    focusClear?: boolean;
   }
 >;
 
 const TrimmedInput = (props: TrimmedInputProps) => {
-  const { onChange, onBlur, inputRef, ...others } = props;
+  const {
+    onChange,
+    onBlur,
+    focusClear = true,
+    inputRef,
+    className,
+    ...others
+  } = props;
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -23,22 +32,28 @@ const TrimmedInput = (props: TrimmedInputProps) => {
   const handleBlur = (e: FocusEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const newValue = value?.trim();
-    onChange?.(newValue);
+    if (newValue !== value) {
+      onChange?.(newValue);
+    }
     onBlur?.(e);
   };
 
   return (
     <Input
-      {...others}
+      className={classNames(
+        {
+          [styles.input_focus_clear]: focusClear,
+        },
+        className
+      )}
       ref={inputRef}
+      placeholder="请输入"
+      allowClear
+      {...others}
       onBlur={handleBlur}
       onChange={handleChange}
-      allowClear
-      placeholder="请输入"
     />
   );
 };
 
-TrimmedInput.TextArea = TrimmedTextArea;
-TrimmedInput.WithSelect = TrimmedInputWithSelect;
 export default TrimmedInput;

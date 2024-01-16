@@ -17,6 +17,7 @@ export type FieldEntity = {
   isPreserve: () => boolean;
   isList: () => boolean;
   isListField: () => boolean;
+  isFieldDirty: () => boolean;
   getMeta: () => Meta;
   props: {
     initialValue?: any;
@@ -32,6 +33,7 @@ export type InvalidateFieldEntity = {
 export type Meta = {
   touched?: boolean;
   name: InternalNamePath;
+  dirty?: boolean;
 };
 
 export type InternalFieldData = Meta & {

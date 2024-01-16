@@ -24,3 +24,41 @@ export const cloneByNamePathList = (
   });
   return newStore;
 };
+
+// Like `shallowEqual`, but we not check the data which may cause re-render
+type SimilarObject = string | number | object;
+export const isSimilar = (source: SimilarObject, target: SimilarObject) => {
+  if (source === target) {
+    return true;
+  }
+
+  if ((!source && target) || (source && !target)) {
+    return false;
+  }
+
+  if (
+    !source ||
+    !target ||
+    typeof source !== "object" ||
+    typeof target !== "object"
+  ) {
+    return false;
+  }
+
+  const sourceKeys = Object.keys(source);
+  const targetKeys = Object.keys(target);
+  const keys = new Set([...sourceKeys, ...targetKeys]);
+
+  return Array.from(keys).every((key) => {
+    const sourceValue = (source as Record<string, any>)[key];
+    const targetValue = (target as Record<string, any>)[key];
+
+    if (
+      typeof sourceValue === "function" &&
+      typeof targetValue === "function"
+    ) {
+      return true;
+    }
+    return sourceValue === targetValue;
+  });
+};

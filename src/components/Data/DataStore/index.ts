@@ -1,4 +1,10 @@
-import { get as getValue, set as setValue, merge, NameMap } from "c-fn-utils";
+import {
+  get as getValue,
+  set as setValue,
+  NameMap,
+  matchNamePath,
+} from "c-fn-utils";
+import { merge } from "rc-util/lib/utils/set";
 import warning from "rc-util/lib/warning";
 import { HOOK_MARK, INVALIDATE_NAME_PATH } from "../constants";
 import {
@@ -30,9 +36,7 @@ export class DataStore {
 
   private subscribable = true;
 
-  private store: Store = {
-    C: "CCCAAA",
-  };
+  private store: Store = {};
 
   private fieldEntities: FieldEntity[] = [];
 
@@ -46,18 +50,10 @@ export class DataStore {
     this.forceRootUpdate = forceReRender;
   }
 
-  public getFieldValue = (name: NamePath) => {
-    this.warningUnhooked();
-
-    const namePath = getNamePath(name);
-    return getValue(this.store, namePath);
-  };
-
   public getData: () => InternalDataInstance = () => {
     return {
       getFieldValue: this.getFieldValue,
       getFieldsValue: this.getFieldsValue,
-
       resetFields: this.resetFields,
       setFields: this.setFields,
       setFieldValue: this.setFieldValue,
@@ -93,6 +89,10 @@ export class DataStore {
       "`getInternalHooks` is internal usage. Should not call directly."
     );
     return null;
+  };
+
+  private useSubscribe = (subscribable: boolean) => {
+    this.subscribable = subscribable;
   };
 
   /**
@@ -156,16 +156,13 @@ export class DataStore {
     this.preserve = preserve;
   };
 
-  private useSubscribe = (subscribable: boolean) => {
-    this.subscribable = subscribable;
-  };
-
   // ============================= Watch ============================
   private watchList: WatchCallBack[] = [];
 
   private registerWatch: InternalHooks["registerWatch"] = (callback) => {
     this.watchList.push(callback);
 
+    // 取消监听
     return () => {
       this.watchList = this.watchList.filter((fn) => fn !== callback);
     };
@@ -226,6 +223,7 @@ export class DataStore {
     return this.fieldEntities.filter((field) => field.getNamePath().length);
   };
 
+  // 把fieldEntities转为nameMap格式 { key: field.getNamePath(), value: field }
   private getFieldsMap = (pure: boolean = false) => {
     const cache = new NameMap<FieldEntity>();
 
@@ -312,6 +310,13 @@ export class DataStore {
     return cloneByNamePathList(this.store, filteredNameList.map(getNamePath));
   };
 
+  public getFieldValue = (name: NamePath) => {
+    this.warningUnhooked();
+
+    const namePath = getNamePath(name);
+    return getValue(this.store, namePath);
+  };
+
   /**
    * Reset Field with field `initialValue` prop.
    * Can pass `entities` or `namePathList` or just nothing.
@@ -322,13 +327,15 @@ export class DataStore {
   // 传namePathList 只会重置传递 `namePathList` 的 `Field`
   // 不传递则会重置所有带有 `name` 的 `Field`
   // 优先级 `entities` > `namePathList` > 不传递
-  private resetWithFieldInitialValue = (info?: {
-    entities?: FieldEntity[];
-    // 二维数组
-    namePathList?: InternalNamePath[];
-    // Skip reset 存在是否跳过，默认false
-    skipExist?: boolean;
-  }) => {
+  private resetWithFieldInitialValue = (
+    info: {
+      entities?: FieldEntity[];
+      // 二维数组
+      namePathList?: InternalNamePath[];
+      // Skip reset 存在是否跳过，默认false
+      skipExist?: boolean;
+    } = {}
+  ) => {
     // Create cache
     const cache = new NameMap<Set<{ entity: FieldEntity; value: any }>>();
 
@@ -368,7 +375,7 @@ export class DataStore {
             // 因为只判断了是否等于 `undefined` ，而没有去判断 `initialValue` 是否存在于 `Data` `initialValues` 上
             warning(
               false,
-              `Form already set 'initialValues' with path '${namePath.join(
+              `Data already set 'initialValues' with path '${namePath.join(
                 "."
               )}'. Field can not overwrite it.`
             );
@@ -433,6 +440,8 @@ export class DataStore {
   };
 
   // 重置Fields，
+  // 若重置方法不传参数，则重置所有Field。
+  // 若重置传了参数，则只重置与参数相关的Field。
   // `data` 上 `initialValues`  `Field` 上 `initialValue`
   private resetFields = (nameList?: NamePath[]) => {
     const prevStore = this.store;
@@ -476,6 +485,7 @@ export class DataStore {
   private setFields = (fields: FieldData[]) => {
     const prevStore = this.store;
     const namePathList: InternalNamePath[] = [];
+
     fields.forEach((fieldData) => {
       const { name, ...data } = fieldData;
       const namePath = getNamePath(name);
@@ -493,32 +503,6 @@ export class DataStore {
     });
 
     this.notifyWatch(namePathList, "setField");
-  };
-
-  // Let all child Field get update.
-  private setFieldsValue = (store: Store) => {
-    const prevStore = this.store;
-
-    if (store) {
-      const nextStore = merge(this.store, store);
-      this.updateStore(nextStore);
-
-      this.notifyObservers(prevStore, null, {
-        type: "valueUpdate",
-        source: "external",
-      });
-
-      this.notifyWatch([], "valueUpdate");
-    }
-  };
-
-  private setFieldValue = (name: NamePath, value: any) => {
-    this.setFields([
-      {
-        name,
-        value,
-      },
-    ]);
   };
 
   private getFields = (): InternalFieldData[] => {
@@ -552,6 +536,7 @@ export class DataStore {
   private initEntityValue = (entity: FieldEntity) => {
     const { initialValue } = entity.props;
 
+    console.log("initEntityValue", initialValue);
     if (initialValue !== undefined) {
       const namePath = entity.getNamePath();
       const prevValue = getValue(this.store, namePath);
@@ -607,13 +592,49 @@ export class DataStore {
       this.fieldEntities = this.fieldEntities.filter((item) => item !== entity);
 
       // Clean up store value if not preserve
+      // `preserve` 当字段被删除时保留字段值,默认为 `true`，为 `true` 不需要改变 `store` 。
+      // 当 `preserve` 为 `false` 时，需要去判断与初始值是否一样，不一样则需要重置到初始值
+      // 并且通知相关订阅者
+      // 当是 `ListField` 为 `true` 时，则需要其下子 `Field` 也要卸载
       if (
         !this.isMergedPreserve(preserve) &&
         (!isListField || subNamePath.length > 1)
       ) {
-      }
+        const defaultValue = isListField
+          ? undefined
+          : this.getInitialValue(namePath);
 
-      // this.notifyWatch([namePath], "unRegister");
+        const currValue = this.getFieldValue(namePath);
+
+        // Field组件unmount value与默认值一样则不发生任何事，
+        // 不一样则需要重置到默认值，且通知订阅者
+        if (
+          namePath.length &&
+          currValue !== defaultValue &&
+          this.fieldEntities.every(
+            (field) =>
+              // Only reset when no namePath exist
+              // 仅当不存在namePath时重置
+              !matchNamePath(field.getNamePath(), namePath)
+          )
+        ) {
+          const prevStore = this.store;
+
+          const nextStore = setValue(prevStore, namePath, defaultValue);
+          this.updateStore(nextStore);
+
+          // Notify that field is unmount
+          // 通知 Field 卸载
+          this.notifyObservers(prevStore, [namePath], {
+            type: "remove",
+          });
+
+          this.notifyWatch([namePath], "unRegister");
+
+          // Dependencies update
+          this.triggerDependenciesUpdate(prevStore, namePath);
+        }
+      }
     };
   };
 
@@ -637,7 +658,7 @@ export class DataStore {
     // 当children是方法时，则useSubscribe为false，useSubscribe(!(typeof children === "function"));
     // 当被订阅，直接调用Field里面onStoreChange，
     // 不然直接调用forceRootUpdate更新Field
-    if (this.useSubscribe) {
+    if (this.subscribable) {
       const mergedInfo = {
         ...info,
         store: this.getFieldsValue(true),
@@ -648,6 +669,24 @@ export class DataStore {
     } else {
       this.forceRootUpdate();
     }
+  };
+
+  /**
+   * Notify dependencies children with parent update
+   * We need delay to trigger validate in case Field is under render props
+   */
+  private triggerDependenciesUpdate = (
+    prevStore: Store,
+    namePath: InternalNamePath
+  ) => {
+    const childrenFields = this.getDependencyChildrenFields(namePath);
+
+    this.notifyObservers(prevStore, childrenFields, {
+      type: "dependenciesUpdate",
+      relatedFields: [namePath, ...childrenFields],
+    });
+
+    return childrenFields;
   };
 
   private updateValue = (namePath: InternalNamePath, value: StoreValue) => {
@@ -667,6 +706,8 @@ export class DataStore {
     this.notifyWatch([namePath], "valueUpdate");
 
     // Dependencies update
+    // 对应依赖Field更新
+    const childrenFields = this.triggerDependenciesUpdate(prevStore, namePath);
 
     // trigger callback function
     const { onValuesChange } = this.callbacks;
@@ -674,6 +715,119 @@ export class DataStore {
       // [["name"]]
       const changedValues = cloneByNamePathList(this.store, [namePath]);
       onValuesChange(changedValues, this.getFieldsValue());
+    }
+
+    this.triggerOnFieldsChange([namePath, ...childrenFields]);
+  };
+
+  // Let all child Field get update.
+  private setFieldsValue = (store: Store) => {
+    const prevStore = this.store;
+
+    if (store) {
+      const nextStore = merge(this.store, store);
+      this.updateStore(nextStore);
+
+      this.notifyObservers(prevStore, null, {
+        type: "valueUpdate",
+        source: "external",
+      });
+
+      this.notifyWatch(null, "valueUpdate");
+    }
+  };
+
+  private setFieldValue = (name: NamePath, value: any) => {
+    this.setFields([
+      {
+        name,
+        value,
+      },
+    ]);
+  };
+
+  private getDependencyChildrenFields = (rootNamePath: InternalNamePath) => {
+    const children: Set<FieldEntity> = new Set();
+    const childrenFields: InternalNamePath[] = [];
+
+    const dependenciesFields = new NameMap<Set<FieldEntity>>();
+    // 将 `Fields` 通过 `name` , `dependencies` 关联起来，生成关联Map
+    // kvs: Map(3) {"string:AA": Set(2)[BB, FF], "string:BB": Set(1)[CC], "string:CC": Set(1)[DD]}
+    /**
+     * Generate maps
+     * Can use cache to save perf if user report performance issue with this
+     */
+    // 生成maps
+    // 如果用户反馈性能问题，可以使用缓存保存性能
+    // 需要遍历全部Field的dependencies。
+    // 例如：组件卸载、onCahnge改变
+    // AA ---> BB ---> CC --->DD
+    // AA ---> FF
+    // AA卸载
+    // kvs: Map(3) {"string:AA": Set(2)[BB, FF], "string:BB": Set(1)[CC], "string:CC": Set(1)[DD]}
+    // BB卸载
+    // kvs: Map(3) {"string:AA": Set(1)[FF], "string:BB": Set(1)[CC], "string:CC": Set(1)[DD]}
+    // CC卸载
+    // kvs: Map(3) {"string:AA": Set(2)[BB, FF], "string:CC": Set(1)[DD]}
+    // FF卸载
+    // kvs: Map(3) {"string:AA": Set(1)[BB], "string:BB": Set(1)[CC], "string:CC": Set(1)[DD]}
+    this.getFieldEntities().forEach((field) => {
+      const { dependencies } = field.props;
+
+      (dependencies || []).forEach((dependency) => {
+        const dependencyNamePath = getNamePath(dependency);
+
+        /** 会存在多个依赖于一个Field，所以用dependencyNamePath来做key值，Field来做value值 */
+        dependenciesFields.update(dependencyNamePath, (fields = new Set()) => {
+          fields.add(field);
+          return fields;
+        });
+      });
+    });
+
+    const fillChildren = (rootNamePath: InternalNamePath) => {
+      const fields = dependenciesFields.get(rootNamePath) || new Set();
+
+      fields.forEach((field) => {
+        /** 会存在相同name，Field相同不需要再次循环 */
+        if (!children.has(field)) {
+          children.add(field);
+
+          const fieldNamePath = field.getNamePath();
+          // 需判断Field是否需要更新,
+          // 无初始值或者内部dirty为false，则不需要更新
+          // dirty默认为false，当setFieldValue，trigger(默认onChange)，
+          // setFieldsValue，验证则会变为true，当reset时，会将dirty变为false。
+          if (field.isFieldDirty() && fieldNamePath.length) {
+            childrenFields.push(fieldNamePath);
+            // 依赖嵌套
+            // AA ---> BB ---> CC --->DD
+            // AA ---> FF
+            fillChildren(fieldNamePath);
+          }
+        }
+      });
+    };
+
+    fillChildren(rootNamePath);
+
+    return childrenFields;
+  };
+
+  // 触发FieldsChange事件
+  private triggerOnFieldsChange = (namePathList?: InternalNamePath[]) => {
+    const { onFieldsChange } = this.callbacks;
+
+    if (onFieldsChange) {
+      const fields = this.getFields();
+
+      const changedFields = fields.filter(({ name: fieldName }) =>
+        containsNamePath(namePathList, fieldName)
+      );
+
+      if (changedFields.length) {
+        onFieldsChange(changedFields, fields);
+      }
     }
   };
 }

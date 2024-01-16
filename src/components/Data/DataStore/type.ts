@@ -75,7 +75,7 @@ export type ReducerAction = UpdateAction;
 export type ValueUpdateInfo = {
   type: "valueUpdate";
   // internal 里面的 onChange
-  // extennal 外部的 setFieldsValue
+  // external 外部的 setFieldsValue
   source: "internal" | "external" | "register";
 };
 
@@ -92,8 +92,19 @@ export type ResetInfo = {
   type: "reset";
 };
 
+export type DependenciesUpdateInfo = {
+  type: "dependenciesUpdate";
+  /**
+   * Contains all the related `InternalNamePath[]`.
+   * a <- b <- c : change `a`
+   * relatedFields=[a, b, c]
+   */
+  relatedFields: InternalNamePath[];
+};
+
 export type NotifyInfo =
   | ValueUpdateInfo
   | RemoveInfo
   | SetFieldInfo
-  | ResetInfo;
+  | ResetInfo
+  | DependenciesUpdateInfo;
